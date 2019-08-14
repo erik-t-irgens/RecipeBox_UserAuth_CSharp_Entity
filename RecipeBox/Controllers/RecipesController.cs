@@ -49,7 +49,6 @@ namespace RecipeBox.Controllers
             var currentUser = await _userManager.FindByIdAsync(userId);
             recipe.User = currentUser;
             _db.Recipes.Add(recipe);
-            _db.Tags.Add()
             if (TagId != 0)
             {
                 _db.TagRecipe.Add(new TagRecipe() { TagId = TagId, RecipeId = recipe.RecipeId});
@@ -65,11 +64,47 @@ namespace RecipeBox.Controllers
             var thisRecipe = _db.Recipes
                 .Include(recipe => recipe.Tags)
                 .ThenInclude(join => join.Tag)
-                .Where(recipe => recipe.User.Id == userId)  // queries for only recipes with the current user's Id
+                .Where(recipe => recipe.User.Id == currentUser.Id)  // queries for only recipes with the current user's Id
                 .FirstOrDefault(recipe => recipe.RecipeId == id);
             return View(thisRecipe);
         }
 
+        public async Task<ActionResult> Delete(int id)
+        {
+            var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            var thisRecipe = _db.Recipes
+                .Where(r => r.User.Id == currentUser.Id)
+                .FirstOrDefault(recipes => recipes.RecipeId == id);
+            if (thisRecipe != null)
+            {
+                return View(thisRecipe);
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
+        }
 
+        // [HttpPost, ActionName("Delete")]
+        // public ActionResult DeleteConfirmed(int id)
+        // {
+        //     var thisRecipe = _db.Items.FirstOrDefault(items => items.ItemId == id);
+        //     _db.Items.Remove(thisItem);
+        //     _db.SaveChanges();
+        //     return RedirectToAction("Index");
+        // }
+
+        // public async Task<ActionResult> Delete(int id)
+        // {
+        //     var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        //     var currentUser = await _userManager.FindByIdAsync(userId);
+        //     var thisRecipe = _db.Recipes
+        //         .Include(recipe => recipe.Tags)
+        //         .ThenInclude(join => join.Tag)
+        //         .Where(recipe => recipe.User.Id == userId)  // queries for only recipes with the current user's Id
+        //         .FirstOrDefault(recipe => recipe.RecipeId == id);
+        //     return View(thisRecipe);
+        // }
     }
 }
