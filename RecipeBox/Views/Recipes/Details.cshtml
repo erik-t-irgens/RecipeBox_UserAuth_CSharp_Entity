@@ -16,13 +16,13 @@
   @foreach (var join in Model.Tags)
   {
       <li>@join.Tag.Name</li>
-      @*
+
       @using (Html.BeginForm("DeleteTag", "Recipes"))
       {
         @Html.Hidden("joinId", @join.TagRecipeId)
         <input type="submit" value="Delete"/>
       }
-      *@
+
   }
   </ul>
 

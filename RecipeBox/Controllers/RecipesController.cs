@@ -96,7 +96,7 @@ namespace RecipeBox.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Edit(Recipe recipe, int TagId)
+        public ActionResult Edit(Recipe recipe, int TagId)
         {
             if (TagId != 0)
             {
@@ -130,6 +130,15 @@ namespace RecipeBox.Controllers
             var thisRecipe = _db.Recipes
                 .FirstOrDefault(recipes => recipes.RecipeId == id);
             _db.Recipes.Remove(thisRecipe);
+            _db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public ActionResult DeleteTag(int joinId)
+        {
+            var joinEntry = _db.TagRecipe.FirstOrDefault(entry => entry.TagRecipeId == joinId);
+            _db.TagRecipe.Remove(joinEntry);
             _db.SaveChanges();
             return RedirectToAction("Index");
         }
