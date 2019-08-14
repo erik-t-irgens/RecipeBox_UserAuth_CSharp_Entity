@@ -66,7 +66,45 @@ namespace RecipeBox.Controllers
                 .ThenInclude(join => join.Tag)
                 .Where(recipe => recipe.User.Id == currentUser.Id)  // queries for only recipes with the current user's Id
                 .FirstOrDefault(recipe => recipe.RecipeId == id);
-            return View(thisRecipe);
+            if (thisRecipe != null)
+            {
+                return View(thisRecipe);
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            
+        }
+
+        public async Task<ActionResult> Edit(int id)
+        {
+            var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            ViewBag.TagId = new SelectList(_db.Tags, "TagId", "Name");
+            var thisRecipe = _db.Recipes
+                .Where(r => r.User.Id == currentUser.Id)
+                .FirstOrDefault(recipes => recipes.RecipeId == id);
+            if (thisRecipe != null)
+            {
+                return View(thisRecipe);
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Edit(Recipe recipe, int TagId)
+        {
+            if (TagId != 0)
+            {
+                _db.TagRecipe.Add(new TagRecipe() { TagId = TagId, RecipeId = recipe.RecipeId});
+            }
+            _db.Entry(recipe).State = EntityState.Modified;
+            _db.SaveChanges();
+            return RedirectToAction("Index");               
         }
 
         public async Task<ActionResult> Delete(int id)
@@ -86,25 +124,14 @@ namespace RecipeBox.Controllers
             }
         }
 
-        // [HttpPost, ActionName("Delete")]
-        // public ActionResult DeleteConfirmed(int id)
-        // {
-        //     var thisRecipe = _db.Items.FirstOrDefault(items => items.ItemId == id);
-        //     _db.Items.Remove(thisItem);
-        //     _db.SaveChanges();
-        //     return RedirectToAction("Index");
-        // }
-
-        // public async Task<ActionResult> Delete(int id)
-        // {
-        //     var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        //     var currentUser = await _userManager.FindByIdAsync(userId);
-        //     var thisRecipe = _db.Recipes
-        //         .Include(recipe => recipe.Tags)
-        //         .ThenInclude(join => join.Tag)
-        //         .Where(recipe => recipe.User.Id == userId)  // queries for only recipes with the current user's Id
-        //         .FirstOrDefault(recipe => recipe.RecipeId == id);
-        //     return View(thisRecipe);
-        // }
+        [HttpPost, ActionName("Delete")]
+        public ActionResult DeleteConfirmed(int id)
+        {
+            var thisRecipe = _db.Recipes
+                .FirstOrDefault(recipes => recipes.RecipeId == id);
+            _db.Recipes.Remove(thisRecipe);
+            _db.SaveChanges();
+            return RedirectToAction("Index");
+        }
     }
 }
