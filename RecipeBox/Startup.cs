@@ -31,6 +31,7 @@ namespace RecipeBox
                 .AddEntityFrameworkStores<RecipeBoxContext>()
                 .AddDefaultTokenProviders()
                 .AddErrorDescriber<CustomIdentityErrorDescriber>();
+            // Remove ErrorDescriber if it isn't needed or doesn't work.
 
             services.Configure<IdentityOptions>(options =>
             {
