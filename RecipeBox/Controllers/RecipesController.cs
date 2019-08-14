@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using RecipeBox.Models;
+using RecipeBox.ViewModels;
 using System.Threading.Tasks;
 using System.Security.Claims;
 
@@ -48,6 +49,7 @@ namespace RecipeBox.Controllers
             var currentUser = await _userManager.FindByIdAsync(userId);
             recipe.User = currentUser;
             _db.Recipes.Add(recipe);
+            _db.Tags.Add()
             if (TagId != 0)
             {
                 _db.TagRecipe.Add(new TagRecipe() { TagId = TagId, RecipeId = recipe.RecipeId});
@@ -56,10 +58,17 @@ namespace RecipeBox.Controllers
             return RedirectToAction("Index");
         }
 
-        // public ActionResult Details(int id)
-        // {
-
-        // }
+        public async Task<ActionResult> Details(int id)
+        {
+            var userId = this.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var currentUser = await _userManager.FindByIdAsync(userId);
+            var thisRecipe = _db.Recipes
+                .Include(recipe => recipe.Tags)
+                .ThenInclude(join => join.Tag)
+                .Where(recipe => recipe.User.Id == userId)  // queries for only recipes with the current user's Id
+                .FirstOrDefault(recipe => recipe.RecipeId == id);
+            return View(thisRecipe);
+        }
 
 
     }
